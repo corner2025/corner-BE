@@ -1,4 +1,4 @@
-package com.corner.travel.TouristSpot.domain;
+package com.corner.travel.touristSpot.domain;
 
 
 import jakarta.persistence.*;

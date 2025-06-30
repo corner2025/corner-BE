@@ -1,6 +1,6 @@
-package com.corner.travel.TouristSpot.repository;
+package com.corner.travel.touristSpot.repository;
 
-import com.corner.travel.TouristSpot.domain.TouristSpot;
+import com.corner.travel.touristSpot.domain.TouristSpot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

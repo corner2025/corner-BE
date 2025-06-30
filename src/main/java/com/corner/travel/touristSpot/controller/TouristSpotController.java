@@ -1,8 +1,8 @@
-package com.corner.travel.TouristSpot.controller;
+package com.corner.travel.touristSpot.controller;
 
 
-import com.corner.travel.TouristSpot.domain.TouristSpot;
-import com.corner.travel.TouristSpot.service.TouristSpotService;
+import com.corner.travel.touristSpot.domain.TouristSpot;
+import com.corner.travel.touristSpot.service.TouristSpotService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

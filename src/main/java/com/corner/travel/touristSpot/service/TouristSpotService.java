@@ -1,8 +1,8 @@
-package com.corner.travel.TouristSpot.service;
+package com.corner.travel.touristSpot.service;
 
 
-import com.corner.travel.TouristSpot.domain.TouristSpot;
-import com.corner.travel.TouristSpot.repository.TouristSpotRepository;
+import com.corner.travel.touristSpot.domain.TouristSpot;
+import com.corner.travel.touristSpot.repository.TouristSpotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
