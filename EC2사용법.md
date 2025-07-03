@@ -10,7 +10,8 @@ $ chmod 400 corner2025.pem
 cd ~/corner-travel-db
 
 2. SSH 접속
-$ ssh -i "corner2025.pem" ec2-user@ec2-3-37-129-139.ap-northeast-2.compute.amazonaws.com
+$ ssh -i "corner2025.pem" ec2-user@ec2-3-35-8-211.ap-northeast-2.compute.amazonaws.com
+
 
 
 3. 컨테이너 관리
@@ -26,5 +27,14 @@ docker-compose up -d
 
 
 4. MySQL 접속 테스트
-docker exec -it cornerTravelDb mysql -u root -p
+docker exec -it cornerTravelDb mysql -u root -p / mysql -u cornerbe -p 
 # 비밀번호: rootpass
+# 비밀번호: cornerbe0720
+
+
+
+- mysql 접속 후 TABLE 조회
+SHOW DATABASES;
+USE travel;
+SHOW TABLES;
+SELECT * FROM tourist_spot LIMIT 10;
