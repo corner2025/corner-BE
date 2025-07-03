@@ -2,8 +2,8 @@ package com.corner.travel.dutyfree.service;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
-import com.corner.travel.dutyFree.domain.DutyFreeProduct;
-import com.corner.travel.dutyFree.repository.DutyFreeProductRepository;
+import com.corner.travel.dutyfree.domain.DutyFreeProduct;
+import com.corner.travel.dutyfree.repository.DutyFreeProductRepository;
 import com.opencsv.exceptions.CsvValidationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
