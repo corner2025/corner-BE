@@ -7,12 +7,12 @@ $ cd /c/corner2025_EC2/gitbash
 
 $ chmod 400 corner2025.pem
 
-cd ~/corner-travel-db
+
 
 2. SSH 접속
-$ ssh -i "corner2025.pem" ec2-user@ec2-3-35-8-211.ap-northeast-2.compute.amazonaws.com
+$ ssh -i "corner2025.pem" ec2-user@ec2-13-124-62-0.ap-northeast-2.compute.amazonaws.com
 
-
+$ cd ~/corner-travel-db
 
 3. 컨테이너 관리
 # 컨테이너 상태 확인
@@ -38,3 +38,68 @@ SHOW DATABASES;
 USE travel;
 SHOW TABLES;
 SELECT * FROM tourist_spot LIMIT 10;
+
+
+
+
+✅ Backend Docker container
+-기존 docker container 삭제
+docker stop cornerbeserver-container
+docker rm cornerbeserver-container
+docker image rm cornerbeserver-image
+
+
+exit; 후 재배포
+
+scp -i /c/corner2025_EC2/gitbash/corner2025.pem -r /c/corner2025/corner-BE ec2-user@ec2-13-124-62-0.ap-northeast-2.compute.amazonaws.com:~/cornerBEServer
+rm -rf ~/cornerBEServer
+ssh접속 후 다시 빌드
+cd ~/cornerBEServer
+./gradlew build -x test
+./gradlew clean
+ls build/libs
+
+도커 이미지 빌드
+docker build -t cornerbeserver-image .
+도커 이미지 확인
+docker images
+
+--link cornerTravelDb \
+--restart always \
+도커 컨테이너 재실행
+docker run -d \
+--name cornerbeserver-container \
+--network corner-travel-db_default
+-p 8081:8080 \
+cornerbeserver-image
+
+
+
+docker logs cornerbeserver-container
+
+
+
+
+- //docker backend 띄우기 (cd ~/cornerBEServer)
+- 
+- Dockerfile
+- FROM openjdk:17-jdk
+  ARG JAR_FILE=build/libs/*.jar
+  COPY ${JAR_FILE} app.jar
+  EXPOSE 8080
+  ENTRYPOINT ["java", "-jar", "app.jar"]
+- 
+  scp -i /c/corner2025_EC2/gitbash/corner2025.pem -r /c/corner2025/corner-BE ec2-user@ec2-3-35-8-211.ap-northeast-2.compute.amazonaws.com:~/cornerBEServer
+
+도커 이미지 만들기
+docker build -t cornerbeserver-image .
+
+
+
+
+-네트워크
+$ docker network create corner-net
+$ docker network ls
+$ docker network rm corner-net  # 혹시 남아있는 기존 네트워크 있으면 삭제
+$ docker network inspect corner-net
+

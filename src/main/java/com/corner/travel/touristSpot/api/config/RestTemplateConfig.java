@@ -8,9 +8,15 @@ import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class RestTemplateConfig {
@@ -18,7 +24,7 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate() {
         try {
-            // ✅ SSL 컨텍스트 설정 - 공공데이터포털 SSL 이슈 해결
+            // ✅ SSL 설정
             SSLContext sslContext = SSLContextBuilder
                     .create()
                     .loadTrustMaterial(new TrustSelfSignedStrategy())
@@ -27,21 +33,29 @@ public class RestTemplateConfig {
             SSLConnectionSocketFactory sslConnectionSocketFactory =
                     new SSLConnectionSocketFactory(sslContext);
 
-            // ✅ HttpClient 생성
+            // ✅ HttpClient
             CloseableHttpClient httpClient = HttpClients.custom()
                     .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                     .build();
 
-            // ✅ RequestFactory 설정
+            // ✅ Factory
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
             factory.setHttpClient(httpClient);
-            factory.setConnectTimeout(15000); // 15초로 증가
-            factory.setConnectionRequestTimeout(15000); // 15초로 증가
+            factory.setConnectTimeout(15000);
+            factory.setConnectionRequestTimeout(15000);
 
-            return new RestTemplate(factory);
+            // ✅ RestTemplate 생성
+            RestTemplate restTemplate = new RestTemplate(factory);
+
+            // ✅ 메시지 컨버터 추가 (기존 유지 + text/html 처리 가능하게 추가)
+            List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+            messageConverters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // text/html 처리용
+            messageConverters.add(new MappingJackson2HttpMessageConverter()); // JSON 처리용
+            restTemplate.setMessageConverters(messageConverters);
+
+            return restTemplate;
 
         } catch (Exception e) {
-            // SSL 설정 실패 시 기본 RestTemplate 반환
             System.err.println("SSL 설정 실패, 기본 RestTemplate 사용: " + e.getMessage());
 
             CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -50,7 +64,14 @@ public class RestTemplateConfig {
             factory.setConnectTimeout(15000);
             factory.setConnectionRequestTimeout(15000);
 
-            return new RestTemplate(factory);
+            RestTemplate restTemplate = new RestTemplate(factory);
+
+            List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+            messageConverters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+            messageConverters.add(new MappingJackson2HttpMessageConverter());
+            restTemplate.setMessageConverters(messageConverters);
+
+            return restTemplate;
         }
     }
 }
