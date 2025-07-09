@@ -1,4 +1,4 @@
-package com.corner.travel.touristSpot.api.config;
+package com.corner.travel.config;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;

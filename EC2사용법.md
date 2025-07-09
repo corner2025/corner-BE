@@ -25,6 +25,8 @@ docker logs cornerTravelDb
 docker-compose down
 docker-compose up -d
 
+docker rm -f [백엔드 컨테이너 이름 또는 ID]
+docker rmi [백엔드 이미지 이름 또는 ID]
 
 4. MySQL 접속 테스트
 docker exec -it cornerTravelDb mysql -u root -p / mysql -u cornerbe -p 
@@ -64,37 +66,22 @@ docker build -t cornerbeserver-image .
 도커 이미지 확인
 docker images
 
---link cornerTravelDb \
---restart always \
-도커 컨테이너 재실행
-docker run -d \
---name cornerbeserver-container \
---network corner-travel-db_default
--p 8081:8080 \
-cornerbeserver-image
-
-
-
 docker logs cornerbeserver-container
 
 
-
-
 - //docker backend 띄우기 (cd ~/cornerBEServer)
-- 
+$  vi Dockerfile
 - Dockerfile
-- FROM openjdk:17-jdk
-  ARG JAR_FILE=build/libs/*.jar
-  COPY ${JAR_FILE} app.jar
-  EXPOSE 8080
-  ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM openjdk:17-jdk
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
 - 
   scp -i /c/corner2025_EC2/gitbash/corner2025.pem -r /c/corner2025/corner-BE ec2-user@ec2-3-35-8-211.ap-northeast-2.compute.amazonaws.com:~/cornerBEServer
 
 도커 이미지 만들기
 docker build -t cornerbeserver-image .
-
-
 
 
 -네트워크

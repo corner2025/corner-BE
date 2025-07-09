@@ -6,6 +6,7 @@ import com.corner.travel.performance.api.service.PerformanceAPiService;
 import com.corner.travel.performance.domain.Performance;
 import com.corner.travel.performance.repository.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,11 +15,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
+    private final PerformanceAPiService performanceAPiService;
+
     //DB API호출 기반으로 공연 정보 저장
     public void savePerformances(List<PerformanceApiDto> performanceDtos) {
         // 1. API에서 받은 ID 리스트
@@ -50,6 +54,28 @@ public class PerformanceService {
 
         performanceRepository.saveAll(newPerformances);
     }
+
+    //DB 전체저장
+    public void fetchAllPerformancesByPeriod(String startDate, String endDate) {
+        int page = 1;
+        int size = 100;
+
+        while (true) {
+            try {
+                List<PerformanceApiDto> performanceDtos = performanceAPiService.getPerformances(page, size, startDate, endDate);
+                if (performanceDtos == null || performanceDtos.isEmpty()) {
+                    break;
+                }
+
+                savePerformances(performanceDtos); // 중복 체크 포함 저장
+                page++;
+            } catch (Exception e) {
+                log.error("공연 정보 수집 중 오류 발생 - page: {}", page, e);
+                break;
+            }
+        }
+    }
+
 
     //DB 기반 정보조회 , 페이징
     public Page<Performance> getPerformances(String area, String startDate, String endDate, Pageable pageable) {

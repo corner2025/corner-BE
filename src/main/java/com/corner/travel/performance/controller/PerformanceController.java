@@ -38,6 +38,18 @@ public class PerformanceController {
 
         return "공연 데이터 저장 완료 (" + performanceList.size() + "건)";
     }
+
+
+    @PostMapping("/init/all")
+    public String saveAllPerformancesToDb(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        performanceService.fetchAllPerformancesByPeriod(startDate, endDate);
+        return "공연 데이터 전체 수집 시작";
+    }
+
+
+
     //DB기반 공연 전체조회
     @GetMapping
     public Page<Performance> getPerformances(

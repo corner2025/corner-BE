@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/tourist-spot")
+@RequestMapping("/api/tourist-spot")
 public class TouristSpotApiController {
 
     private final TouristSpotApiService touristSpotService;

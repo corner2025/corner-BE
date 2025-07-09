@@ -11,6 +11,7 @@ import com.corner.travel.touristSpot.dto.TouristSpotListResponse;
 import com.corner.travel.touristSpot.dto.TouristSpotSearchRequest;
 import com.corner.travel.touristSpot.repository.TouristSpotRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TouristSpotService {
@@ -59,6 +61,47 @@ public class TouristSpotService {
             }
         }
     }
+
+    @Transactional
+    public void fetchAllTouristSpots() {
+        for (int areaCode = 1; areaCode <= 39; areaCode++) {
+            for (int page = 1; ; page++) {
+                try {
+                    List<TouristSpotItem> items = (List<TouristSpotItem>) touristSpotApiService.getTouristSpots(page, 100, String.valueOf(areaCode), null, null);
+                    if (items == null || items.isEmpty()) break;
+
+                    for (TouristSpotItem item : items) {
+                        if (touristSpotRepository.findByContentid(item.getContentid()).isPresent()) continue;
+
+                        TouristSpot spot = TouristSpot.builder()
+                                .title(item.getTitle())
+                                .addr1(item.getAddr1())
+                                .addr2(item.getAddr2())
+                                .areacode(item.getAreacode())
+                                .cat1(item.getCat1())
+                                .cat2(item.getCat2())
+                                .cat3(item.getCat3())
+                                .contentid(item.getContentid())
+                                .contenttypeid(item.getContenttypeid())
+                                .firstimage(item.getFirstimage())
+                                .firstimage2(item.getFirstimage2())
+                                .mapx(item.getMapx())
+                                .mapy(item.getMapy())
+                                .sigungucode(item.getSigungucode())
+                                .tel(item.getTel())
+                                .zipcode(item.getZipcode())
+                                .build();
+
+                        touristSpotRepository.save(spot);
+                    }
+                } catch (Exception e) {
+                    log.error("areaCode={} page={} 처리 중 오류 발생", areaCode, page, e);
+                    break; // 이 페이지 건너뛰고 다음 지역으로 넘어감
+                }
+            }
+        }
+    }
+
 
     //관광지 조회
     public Page<TouristSpotListResponse> getTouristSpots(TouristSpotSearchRequest request, Pageable pageable) {

@@ -25,7 +25,12 @@ public class TouristSpotController {
     private final TouristSpotService touristSpotService;
     private final NearbyTouristSpotApiService nearbyTouristSpotApiService;
 
-
+    //관광지 DB 전체 데이터 저장
+    @PostMapping("/init/all")
+    public ResponseEntity<?> initAllTouristSpots() {
+        touristSpotService.fetchAllTouristSpots();
+        return ResponseEntity.ok("초기 관광지 데이터 수집 완료");
+    }
     //관광지 DB 저장 INSERT
     @PostMapping("/init")
     public ResponseEntity<String> initTouristData(){

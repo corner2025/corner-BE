@@ -1,6 +1,7 @@
 package com.corner.travel.performance.api.service;
 
 
+import com.corner.travel.performance.api.dto.PerformanceApiDto;
 import com.corner.travel.performance.api.dto.PerformanceApiListResponse;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringReader;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,16 @@ public class PerformanceAPiService {
         } catch (Exception e) {
             throw new RuntimeException("KOPIS 공연 리스트 XML 파싱 실패", e);
         }
+    }
+
+    public List<PerformanceApiDto> getPerformances(int page, int size, String startDate, String endDate) {
+        PerformanceApiListResponse response = fetchAndParsePerformanceList(startDate, endDate, page, size);
+
+        if (response != null && response.getPerformance() != null) {
+            return response.getPerformance();
+        }
+
+        return List.of();
     }
 
 }

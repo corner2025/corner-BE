@@ -1,9 +1,9 @@
 spring:
   datasource:
     #로컬 작업용
-    url: jdbc:mysql://ec2-13-124-62-0.ap-northeast-2.compute.amazonaws.com:3306/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://117.16.152.191:3307/travel?useSSL=false&serverTimezone=Asia/Seoul
     #SCP 배포용
-    # url: jdbc:mysql://mysql:3306/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    # url: jdbc:mysql://mysql:3307/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
     username: cornerbe
     password: cornerbe0720
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -15,6 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
 logging:
   level:
