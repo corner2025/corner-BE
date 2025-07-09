@@ -21,7 +21,17 @@ public class DutyFreeProductService {
      */
     public List<RankingDto> getMonthlyRanking(String yearMonth, int limit) {
         var page = PageRequest.of(0, limit);
-        return repo.findMonthlyCategorySales(yearMonth, page);
+        List<RankingDto> list = repo.findMonthlyCategorySales(yearMonth, page);
+
+        System.out.println("=== getMonthlyRanking 호출 ===");
+        System.out.println("파라미터 → yearMonth=" + yearMonth + ", limit=" + limit);
+        System.out.println("리스트 사이즈 → " + list.size());
+        for (RankingDto dto : list) {
+            System.out.println(dto.getCategory() + " = " + dto.getTotalSales());
+        }
+        System.out.println("==============================");
+
+        return list;
     }
 
     /**
