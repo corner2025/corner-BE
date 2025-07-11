@@ -29,6 +29,11 @@ server:
 tourist:
   service-key: tDBq6MxnLMNjwKmw0R6Ga0jQjv8i/AzQmUGNwPuPfKtFka/ZtHLfra92zsA0i2UbGhSwd9qYpqgcLzaFydVdGQ==
 
+data:
+  festival:
+    api:
+      url: http://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api
+      key: nD6ETIybWlHX2MCj1bfbjKLBNqAuItTNraI%2BBhxU0UR4ZWlrJxhpnIliwu0HA%2BBB7jkRATeuujgSjr%2B4nG6CbQ%3D%3D
 
 
 
