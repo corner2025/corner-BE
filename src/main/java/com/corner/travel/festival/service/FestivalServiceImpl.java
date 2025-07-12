@@ -1,102 +1,160 @@
 package com.corner.travel.festival.service;
 
+import com.corner.travel.festival.domain.Festival;
 import com.corner.travel.festival.dto.FestivalDto;
+import com.corner.travel.festival.repository.FestivalRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FestivalServiceImpl implements FestivalService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final FestivalRepository repo;
 
     @Value("${data.festival.api.url}")
     private String apiUrl;
 
-    // yml에 디코딩된 키(+, =) 그대로 넣어두고 사용
     @Value("${data.festival.api.key}")
     private String serviceKey;
 
-    public FestivalServiceImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
-    }
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Override
     public List<FestivalDto> getFestivalList(int pageNo, int numOfRows) {
-        // 1) URL을 직접 조합 (serviceKey는 yml에 인코딩된 형태로 들어있음)
-        String uriStr = String.format("%s?serviceKey=%s&pageNo=%d&numOfRows=%d&type=json",
-                apiUrl,
-                serviceKey,
-                pageNo,
-                numOfRows
+        String uriStr = String.format(
+                "%s?serviceKey=%s&MobileOS=WEB&MobileApp=WebTest" +
+                        "&pageNo=%d&numOfRows=%d&eventStartDate=20250701&_type=json",
+                apiUrl, serviceKey, pageNo, numOfRows
         );
-        System.out.println("▶▶▶ External API URI    = " + uriStr);
+        URI uri = URI.create(uriStr);
+        System.out.println("▶▶▶ External API URI = " + uriStr);
 
-        // 2) API 호출
-        ResponseEntity<String> resp = restTemplate.getForEntity(uriStr, String.class);
-        System.out.println("▶▶▶ External API status = " + resp.getStatusCodeValue());
-        System.out.println("▶▶▶ External API body   = " + resp.getBody());
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent", "Mozilla/5.0");
+        headers.set("Accept", "application/json");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
+        ResponseEntity<String> resp = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
         String body = resp.getBody() != null ? resp.getBody().trim() : "";
 
-        // 3) XML 에러 감지 (resultCode != "00")
         if (body.startsWith("<")) {
-            String code = body.replaceAll("(?s).*<resultCode>(\\d+)</resultCode>.*", "$1");
-            String msg  = body.replaceAll("(?s).*<resultMsg>([^<]+)</resultMsg>.*", "$1");
-            if ("30".equals(code)) {
-                throw new RuntimeException("축제 API 서비스 준비 중입니다. (키 승인 대기: " + msg + ")");
-            }
-            throw new RuntimeException("External API Error: code=" + code + ", msg=" + msg);
+            throw new RuntimeException("External API Error: " + body);
         }
 
-        // 4) JSON 파싱 (이전과 동일)
         List<FestivalDto> result = new ArrayList<>();
         try {
-            JsonNode items = objectMapper.readTree(body)
+            JsonNode root = objectMapper.readTree(body);
+            JsonNode items = root
                     .path("response")
                     .path("body")
-                    .path("items");    // items가 바로 ArrayNode
+                    .path("items")
+                    .path("item");
 
             if (items.isArray()) {
                 for (JsonNode node : items) {
-                    result.add(new FestivalDto(
-                            node.path("fstvlNm").asText(""),
-                            node.path("opar").asText(""),
-                            node.path("fstvlStartDate").asText(""),
-                            node.path("fstvlEndDate").asText(""),
-                            node.path("mnnstNm").asText(""),
-                            node.path("auspcInsttNm").asText(""),
-                            node.path("phoneNumber").asText(""),
-                            node.path("homepageUrl").asText(""),
-                            node.path("rdnmadr").asText(""),
-                            node.path("lnmadr").asText(""),
-                            node.path("latitude").asText(""),
-                            node.path("longitude").asText("")
-                    ));
+                    result.add(parseFestival(node));
                 }
             }
-
         } catch (Exception e) {
             throw new RuntimeException("Festival JSON 파싱 실패", e);
         }
 
+        List<Festival> entities = result.stream()
+                .map(dto -> {
+                    Festival f = new Festival();
+                    f.setTitle(dto.getTitle());
+                    f.setAddr1(dto.getAddr1());
+                    f.setAddr2(dto.getAddr2());
+                    f.setEventStartDate(LocalDate.parse(dto.getEventStartDate(), FMT));
+                    f.setEventEndDate(LocalDate.parse(dto.getEventEndDate(), FMT));
+                    f.setFirstImage(dto.getFirstImage());
+                    f.setFirstImage2(dto.getFirstImage2());
+                    f.setMapX(Double.valueOf(dto.getMapX()));
+                    f.setMapY(Double.valueOf(dto.getMapY()));
+                    f.setTel(dto.getTel());
+                    return f;
+                })
+                .collect(Collectors.toList());
+        repo.deleteAll();
+        repo.saveAll(entities);
+
         return result;
     }
 
+    private FestivalDto parseFestival(JsonNode node) {
+        return new FestivalDto(
+                null,
+                node.path("title").asText(""),
+                node.path("addr1").asText(""),
+                node.path("addr2").asText(""),
+                node.path("eventstartdate").asText(""),
+                node.path("eventenddate").asText(""),
+                node.path("firstimage").asText(""),
+                node.path("firstimage2").asText(""),
+                node.path("mapx").asText(""),
+                node.path("mapy").asText(""),
+                node.path("tel").asText("")
+        );
+    }
 
     @Override
-    public Optional<FestivalDto> getFestivalDetail(String festivalName) {
-        return getFestivalList(1, 1000).stream()
-                .filter(f -> f.getFstvlNm().equals(festivalName))
-                .findFirst();
+    public Optional<FestivalDto> getFestivalDetail(Long festivalId) {
+        return repo.findById(festivalId)
+                .map(entity -> new FestivalDto(
+                        entity.getId(),
+                        entity.getTitle(),
+                        entity.getAddr1(),
+                        entity.getAddr2(),
+                        entity.getEventStartDate().format(FMT),
+                        entity.getEventEndDate().format(FMT),
+                        entity.getFirstImage(),
+                        entity.getFirstImage2(),
+                        String.valueOf(entity.getMapX()),
+                        String.valueOf(entity.getMapY()),
+                        entity.getTel()
+                ));
+    }
+
+    @Override
+    public List<FestivalDto> findAllFromDb(int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Page<Festival> page = repo.findAll(pageable);
+        return page.stream()
+                .map(entity -> new FestivalDto(
+                        entity.getId(),
+                        entity.getTitle(),
+                        entity.getAddr1(),
+                        entity.getAddr2(),
+                        entity.getEventStartDate().format(FMT),
+                        entity.getEventEndDate().format(FMT),
+                        entity.getFirstImage(),
+                        entity.getFirstImage2(),
+                        String.valueOf(entity.getMapX()),
+                        String.valueOf(entity.getMapY()),
+                        entity.getTel()
+                ))
+                .collect(Collectors.toList());
     }
 }

@@ -32,7 +32,7 @@ tourist:
 data:
   festival:
     api:
-      url: http://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api
+      url: https://apis.data.go.kr/B551011/KorService2/searchFestival2
       key: nD6ETIybWlHX2MCj1bfbjKLBNqAuItTNraI%2BBhxU0UR4ZWlrJxhpnIliwu0HA%2BBB7jkRATeuujgSjr%2B4nG6CbQ%3D%3D
 
 
