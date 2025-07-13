@@ -21,9 +21,9 @@ public class DutyFreeProduct {
     protected DutyFreeProduct() {}
 
     public DutyFreeProduct(String yearMonth, String category, Integer salesCount) {
-        this.yearMonth = yearMonth;
         this.category   = category;
         this.salesCount = salesCount;
+        this.yearMonth = yearMonth;
     }
 
     // getters only (불변 객체 스타일)

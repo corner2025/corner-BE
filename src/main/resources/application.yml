@@ -1,9 +1,9 @@
 spring:
   datasource:
     #로컬 작업용
-    url: jdbc:mysql://117.16.152.191:3307/travel?useSSL=false&serverTimezone=Asia/Seoul
+    # url: jdbc:mysql://117.16.152.191:3307/travel?useSSL=false&serverTimezone=Asia/Seoul
     #SCP 배포용
-    # url: jdbc:mysql://mysql:3307/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://mysql:3307/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
     username: cornerbe
     password: cornerbe0720
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -29,7 +29,12 @@ server:
 tourist:
   service-key: tDBq6MxnLMNjwKmw0R6Ga0jQjv8i/AzQmUGNwPuPfKtFka/ZtHLfra92zsA0i2UbGhSwd9qYpqgcLzaFydVdGQ==
 
-
+data:
+  festival:
+    api:
+      url: http://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api
+      key: nD6ETIybWlHX2MCj1bfbjKLBNqAuItTNraI%2BBhxU0UR4ZWlrJxhpnIliwu0HA%2BBB7jkRATeuujgSjr%2B4nG6CbQ%3D%3D
+      # key: nD6ETIybWlHX2MCj1bfbjKLBNqAuItTNraI+BhxU0UR4ZWlrJxhpnIliwu0HA+BB7jkRATeuujgSjr+4nG6CbQ==
 
 
 springdoc:
