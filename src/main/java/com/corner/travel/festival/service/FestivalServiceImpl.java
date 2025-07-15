@@ -3,6 +3,7 @@ package com.corner.travel.festival.service;
 import com.corner.travel.festival.domain.Festival;
 import com.corner.travel.festival.dto.FestivalDto;
 import com.corner.travel.festival.repository.FestivalRepository;
+import com.corner.travel.festival.repository.FestivalRepositoryCustom;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class FestivalServiceImpl implements FestivalService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final FestivalRepository repo;
-
+    private final FestivalRepositoryCustom repoCustom;
 
     @Value("${data.festival.api.url}")
     private String apiUrl;
@@ -139,9 +140,10 @@ public class FestivalServiceImpl implements FestivalService {
     }
 
     @Override
-    public List<FestivalDto> findAllFromDb(int pageNo, int pageSize) {
+    public List<FestivalDto> findAllFromDb(int pageNo, int pageSize, String startDate, String endDate, String location, String title) {
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-        Page<Festival> page = repo.findAll(pageable);
+        Page<Festival> page = repoCustom.findByFilters(startDate, endDate, location, title, pageable);
+
         return page.stream()
                 .map(entity -> new FestivalDto(
                         entity.getId(),
@@ -157,6 +159,6 @@ public class FestivalServiceImpl implements FestivalService {
                         entity.getTel()
                 ))
                 .collect(Collectors.toList());
-
     }
+
 }

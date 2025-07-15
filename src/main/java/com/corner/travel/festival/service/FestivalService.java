@@ -23,5 +23,6 @@ public interface FestivalService {
      * @param pageNo 1-base 페이지 번호
      * @param pageSize 페이지 크기
      */
-    List<FestivalDto> findAllFromDb(int pageNo, int pageSize);
+    List<FestivalDto> findAllFromDb(int pageNo, int pageSize, String startDate, String endDate, String location, String title);
+
 }

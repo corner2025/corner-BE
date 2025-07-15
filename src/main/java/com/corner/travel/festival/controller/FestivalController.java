@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.List;
 
 @RestController
@@ -35,18 +34,27 @@ public class FestivalController {
     }
 
     /**
-     * DB에 저장된 축제 페이징 조회
-     * @param pageNo 1-base 페이지 번호
+     * DB에 저장된 축제 페이징 + 필터 검색 조회
+     * @param pageNo 페이지 번호 (1-base)
      * @param pageSize 페이지 크기
+     * @param startDate (optional) 시작일 yyyy-MM-dd
+     * @param endDate (optional) 종료일 yyyy-MM-dd
+     * @param location (optional) 지역명
+     * @param title (optional) 축제명
      */
     @GetMapping
     public ResponseEntity<List<FestivalDto>> listFromDb(
             @RequestParam(defaultValue = "1") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String title
     ) {
-        List<FestivalDto> results = service.findAllFromDb(pageNo, pageSize);
+        List<FestivalDto> results = service.findAllFromDb(pageNo, pageSize, startDate, endDate, location, title);
         return ResponseEntity.ok(results);
     }
+
 
     // id 기반 검색
     @GetMapping("/{id}")
