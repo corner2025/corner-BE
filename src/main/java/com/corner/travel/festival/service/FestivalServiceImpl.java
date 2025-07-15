@@ -138,9 +138,10 @@ public class FestivalServiceImpl implements FestivalService {
     }
 
     @Override
-    public List<FestivalDto> findAllFromDb(int pageNo, int pageSize) {
+    public List<FestivalDto> findAllFromDb(int pageNo, int pageSize, String startDate, String endDate, String location, String title) {
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-        Page<Festival> page = repo.findAll(pageable);
+        Page<Festival> page = repo.findByFilters(startDate, endDate, location, title, pageable);
+
         return page.stream()
                 .map(entity -> new FestivalDto(
                         entity.getId(),
@@ -157,4 +158,5 @@ public class FestivalServiceImpl implements FestivalService {
                 ))
                 .collect(Collectors.toList());
     }
+
 }
