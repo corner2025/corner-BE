@@ -1,38 +1,25 @@
+
+// src/main/java/com/corner/travel/festival/dto/FestivalDto.java
 package com.corner.travel.festival.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FestivalDto {
-    private String fstvlNm;
-    private String opar;
-    private String fstvlStartDate;
-    private String fstvlEndDate;
-    private String mnnstNm;
-    private String auspcInsttNm;
-    private String phoneNumber;
-    private String homepageUrl;
-    private String rdnmadr;
-    private String lnmadr;
-    private String latitude;
-    private String longitude;
-
-    // 전체 필드 생성자
-    public FestivalDto(String fstvlNm, String opar, String fstvlStartDate, String fstvlEndDate,
-                       String mnnstNm, String auspcInsttNm, String phoneNumber,
-                       String homepageUrl, String rdnmadr, String lnmadr,
-                       String latitude, String longitude) {
-        this.fstvlNm = fstvlNm;
-        this.opar = opar;
-        this.fstvlStartDate = fstvlStartDate;
-        this.fstvlEndDate = fstvlEndDate;
-        this.mnnstNm = mnnstNm;
-        this.auspcInsttNm = auspcInsttNm;
-        this.phoneNumber = phoneNumber;
-        this.homepageUrl = homepageUrl;
-        this.rdnmadr = rdnmadr;
-        this.lnmadr = lnmadr;
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
+    private Long id;
+    private String title;
+    private String addr1;
+    private String addr2;
+    private String eventStartDate;
+    private String eventEndDate;
+    private String firstImage;
+    private String firstImage2;
+    private String mapX;
+    private String mapY;
+    private String tel;
 }

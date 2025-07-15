@@ -16,11 +16,13 @@ public interface PerformanceRepository extends JpaRepository<Performance, String
     @Query("SELECT p FROM Performance p " +
             "WHERE (:area IS NULL OR p.area LIKE %:area%) " +
             "AND (:startDate IS NULL OR p.startDate >= :startDate) " +
-            "AND (:endDate IS NULL OR p.endDate <= :endDate)")
+            "AND (:endDate IS NULL OR p.endDate <= :endDate) " +
+            "AND (:keyword IS NULL OR p.name LIKE %:keyword%)")
     Page<Performance> searchPerformances(
             @Param("area") String area,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate,
+            @Param("keyword") String keyword,
             Pageable pageable
     );
 
