@@ -51,8 +51,10 @@ public class TouristSpotController {
 
     //관광지 상세조회
     @GetMapping("/{id}")
-    public ResponseEntity<TouristSpotDetailResponse> getDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(touristSpotService.getTouristSpotDetail(id));
+    public ResponseEntity<TouristSpotDetailResponse> getDetail(@PathVariable Long id,
+                                                               @RequestParam(defaultValue = "1") int pageNo,
+                                                               @RequestParam(defaultValue = "10") int numOfRows) {
+        return ResponseEntity.ok(touristSpotService.getTouristSpotDetail(id,pageNo,numOfRows));
     }
 
     //관광지 주변 정보 api 기반 조회
@@ -63,6 +65,16 @@ public class TouristSpotController {
             @RequestParam(defaultValue = "12") int contentTypeId
     ) {
         return touristSpotService.getNearbyTouristSpots(id, radius, contentTypeId);
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<TouristSpotListResponse>> getNearbyFromCoords(
+            @RequestParam double mapx,
+            @RequestParam double mapy,
+            @RequestParam(defaultValue = "30") int radius) {
+
+        List<TouristSpotListResponse> spots = touristSpotService.getNearbyTouristSpotsFromCoords(mapx, mapy, radius);
+        return ResponseEntity.ok(spots);
     }
 
 

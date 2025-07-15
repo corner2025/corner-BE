@@ -16,4 +16,6 @@ public interface TouristSpotRepository extends JpaRepository<TouristSpot, Long> 
     Page<TouristSpot> findByTitleContaining(String keyword, Pageable pageable);
 
     Page<TouristSpot> findByTitleContainingAndAreacodeAndSigungucode(String title, String areacode, String sigungucode, Pageable pageable);
+
+    Optional<TouristSpot> findByMapxAndMapy(String mapx, String mapy);
 }

@@ -1,5 +1,7 @@
 package com.corner.travel.touristSpot.service;
 
+import com.corner.travel.touristSpot.api.dto.AreaCodeItem;
+import com.corner.travel.touristSpot.api.dto.DetailTouristSpotItem;
 import com.corner.travel.touristSpot.api.dto.NearbyItem;
 import com.corner.travel.touristSpot.api.dto.TouristSpotItem;
 import com.corner.travel.touristSpot.api.service.NearbyTouristSpotApiService;
@@ -17,7 +19,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -120,33 +126,192 @@ public class TouristSpotService {
             result = touristSpotRepository.findAll(pageable);
         }
 
-        return result.map(touristSpot -> TouristSpotListResponse.builder()
-                .id(touristSpot.getId())
-                .title(touristSpot.getTitle())
-                .addr1(touristSpot.getAddr1())
-                .firstimage(touristSpot.getFirstimage())
-                .mapx(touristSpot.getMapx())
-                .mapy(touristSpot.getMapy())
-                .build());
+        Map<String, String> areaNameMap = getAreaCodeNameMap();
+
+        return result.map(touristSpot -> {
+            String areaName = areaNameMap.getOrDefault(
+                    String.valueOf(touristSpot.getAreacode()), "알 수 없음");
+
+            String cat2Name = getCat2Name(
+                    touristSpot.getCat1(),
+                    touristSpot.getCat2()
+            );
+            String cat3Name = getCat3Name(
+                    touristSpot.getCat1(),
+                    touristSpot.getCat2(),
+                    touristSpot.getCat3()
+            );
+
+            return TouristSpotListResponse.builder()
+                    .id(touristSpot.getId())
+                    .title(touristSpot.getTitle())
+                    .addr1(touristSpot.getAddr1())
+                    .firstimage(touristSpot.getFirstimage())
+                    .mapx(touristSpot.getMapx())
+                    .mapy(touristSpot.getMapy())
+                    .areaName(areaName)
+                    .cat2Name(cat2Name)
+                    .cat3Name(cat3Name)
+                    .build();
+        });
     }
+
+    private Map<String, String> areaCodeNameMapCache = null;
+
+    private Map<String, String> getAreaCodeNameMap() {
+        if (areaCodeNameMapCache == null) {
+            List<AreaCodeItem> items = touristSpotApiService.getAreaCodeList();
+            areaCodeNameMapCache = items.stream()
+                    .collect(Collectors.toMap(AreaCodeItem::getAreaCode, AreaCodeItem::getAreaName));
+        }
+        return areaCodeNameMapCache;
+    }
+
+    private final Map<String, Map<String, String>> cat3NameCache = new HashMap<>();
+
+    private String getCat3Name(String cat1, String cat2, String cat3) {
+        if (cat1 == null || cat2 == null || cat3 == null) return "알 수 없음";
+
+        String cacheKey = cat1 + "-" + cat2;
+        Map<String, String> map = cat3NameCache.get(cacheKey);
+
+        if (map == null) {
+            map = touristSpotApiService.getCat3NameMap(cat1, cat2);
+            cat3NameCache.put(cacheKey, map);
+        }
+
+        return map.getOrDefault(cat3, "알 수 없음");
+    }
+
+    private final Map<String, Map<String, String>> cat2NameCache = new HashMap<>();
+
+    private String getCat2Name(String cat1, String cat2) {
+        if (cat1 == null || cat2 == null) return "알 수 없음";
+
+        Map<String, String> map = cat2NameCache.get(cat1);
+
+        if (map == null) {
+            map = touristSpotApiService.getCat2NameMap(cat1);
+            cat2NameCache.put(cat1, map);
+        }
+
+        return map.getOrDefault(cat2, "알 수 없음");
+    }
+
 
     //관광지 상세조회
-    public TouristSpotDetailResponse getTouristSpotDetail(Long id) {
+    public TouristSpotDetailResponse getTouristSpotDetail(Long id, int pageNo, int numOfRows) {
         TouristSpot spot = touristSpotRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관광지가 없습니다. id=" + id));
-        return TouristSpotDetailResponse.from(spot);
+
+        // detailCommon2
+        DetailTouristSpotItem detail = touristSpotApiService.getTouristSpotDetail(
+                String.valueOf(spot.getContentid()), pageNo, numOfRows);
+
+        // detailIntro2 추가
+        DetailTouristSpotItem intro = touristSpotApiService.getTouristSpotIntro(
+                String.valueOf(spot.getContentid()), pageNo, numOfRows);
+
+        // 병합: detail 안에 intro 내용 덮어씌우기
+        detail.setInfocenter(intro.getInfocenter());
+        detail.setRestdate(intro.getRestdate());
+        detail.setUsetime(intro.getUsetime());
+        detail.setParking(intro.getParking());
+        detail.setChkbabycarriage(intro.getChkbabycarriage());
+        detail.setChkpet(intro.getChkpet());
+        detail.setChkcreditcard(intro.getChkcreditcard());
+
+        return TouristSpotDetailResponse.from(spot, detail);
     }
 
-    //관광지 상세조회 기반 주변 관광지 정보
+    //관광지 상세조회 기반 주변 관광지 정보  raduis 1km = 1000 (till 20000)
     public List<NearbyItem> getNearbyTouristSpots(Long id, int radius, int contentTypeId) {
         TouristSpot spot = touristSpotRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 관광지를 찾을 수 없습니다."));
 
-        return nearbyTouristSpotApiService.getNearbySpots(
-                spot.getMapx(),  // String
-                spot.getMapy(),  // String
+        List<NearbyItem> rawNearbySpots = nearbyTouristSpotApiService.getNearbySpots(
+                spot.getMapx(),
+                spot.getMapy(),
                 radius,
                 contentTypeId
         );
+
+        return rawNearbySpots.stream()
+                // 자기 자신 제외 (mapx, mapy 비교 혹은 id 비교)
+                .filter(item -> {
+                    // DB에서 mapx, mapy 기준으로 TouristSpot 찾아서 id 비교
+                    TouristSpot matched = touristSpotRepository
+                            .findByMapxAndMapy(item.getMapx(), item.getMapy())
+                            .orElse(null);
+                    return matched == null || !matched.getId().equals(id);
+                })
+                .map(item -> {
+                    TouristSpot matched = touristSpotRepository
+                            .findByMapxAndMapy(item.getMapx(), item.getMapy())
+                            .orElse(null);
+
+                    return NearbyItem.builder()
+                            .id(matched != null ? matched.getId() : null)
+                            .title(item.getTitle())
+                            .mapx(item.getMapx())
+                            .mapy(item.getMapy())
+                            .firstimage(item.getFirstimage())
+                            .tel(item.getTel())
+                            .addr1(item.getAddr1())
+                            .build();
+                })
+                .toList();
     }
+
+
+    //거리 계산 유틸 메서드
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // 지구 반지름 (단위: km)
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+    
+    //사용자 위치 기반 반경 이내 50곳 확인
+    public List<TouristSpotListResponse> getNearbyTouristSpotsFromCoords(double userMapx, double userMapy, int radiusKm) {
+        List<TouristSpot> allSpots = touristSpotRepository.findAll();
+
+        return allSpots.stream()
+                .map(spot -> {
+                    try {
+                        double dist = haversine(
+                                userMapy, userMapx,
+                                Double.parseDouble(spot.getMapy()),
+                                Double.parseDouble(spot.getMapx())
+                        );
+                        return new Object() {
+                            TouristSpot s = spot;
+                            double distance = dist;
+                        };
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(obj -> obj != null && obj.distance <= radiusKm)
+                .sorted((a, b) -> Double.compare(a.distance, b.distance)) // 가까운 순 정렬
+                .limit(50) // 최대 50개만
+                .map(obj -> {
+                    TouristSpot spot = obj.s;
+                    return TouristSpotListResponse.builder()
+                            .id(spot.getId())
+                            .title(spot.getTitle())
+                            .addr1(spot.getAddr1())
+                            .firstimage(spot.getFirstimage())
+                            .mapx(spot.getMapx())
+                            .mapy(spot.getMapy())
+                            .build();
+                })
+                .toList();
+    }
+
+
 }

@@ -19,9 +19,9 @@ public class PerformanceApiController {
         @GetMapping("/test")
         public  PerformanceApiListResponse getPerformanceList(
                 @RequestParam(defaultValue = "20250101") String startDate,
-                @RequestParam(defaultValue = "20250701") String endDate,
-                @RequestParam(defaultValue = "20250701") int page,
-                @RequestParam(defaultValue = "20250701") int rows
+                @RequestParam(defaultValue = "20251231") String endDate,
+                @RequestParam(defaultValue = "1") int page,
+                @RequestParam(defaultValue = "100") int rows
         ){
             return performanceAPiService.fetchAndParsePerformanceList(startDate, endDate, page, rows);
         }

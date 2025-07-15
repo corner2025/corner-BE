@@ -33,6 +33,7 @@ public class FestivalServiceImpl implements FestivalService {
     private final ObjectMapper objectMapper;
     private final FestivalRepository repo;
 
+
     @Value("${data.festival.api.url}")
     private String apiUrl;
 
@@ -156,5 +157,6 @@ public class FestivalServiceImpl implements FestivalService {
                         entity.getTel()
                 ))
                 .collect(Collectors.toList());
+
     }
 }

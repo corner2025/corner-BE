@@ -14,4 +14,7 @@ public class TouristSpotListResponse {
     private String firstimage;
     private String mapx;
     private String mapy;
+    private String areaName;
+    private String cat2Name;
+    private String cat3Name;
 }

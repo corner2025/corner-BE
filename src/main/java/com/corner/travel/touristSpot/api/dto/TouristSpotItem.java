@@ -11,7 +11,9 @@ public class TouristSpotItem {
     private String cat1;
     private String cat2;
     private String cat3;
+    @JsonProperty("contentId")
     private String contentid;
+    @JsonProperty("contentTypeId")
     private String contenttypeid;
     private String createdtime;
     private String firstimage;
@@ -25,11 +27,8 @@ public class TouristSpotItem {
     private String tel;
     private String title;
     private String zipcode;
-    //private String lDongRegnCd;
-   // private String lDongSignguCd;
     @JsonProperty("lDongRegnCd")
     private String lDongRegnCd;
-
     @JsonProperty("lDongSignguCd")
     private String lDongSignguCd;
     private String lclsSystm1;
