@@ -7,7 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TouristSpotSearchRequest {
-    private String areaCode;
-    private String sigunguCode;
+    // private String areaCode;
+    // private String sigunguCode;
     private String keyword;
+    private String areaName;
 }
