@@ -18,24 +18,29 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     @PersistenceContext
     private EntityManager em;
 
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    private static final DateTimeFormatter FRONT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     @Override
     public Page<Festival> findByFilters(String startDate, String endDate, String location, String title, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        // 메인 쿼리
+
+
         CriteriaQuery<Festival> cq = cb.createQuery(Festival.class);
         Root<Festival> root = cq.from(Festival.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
         if (startDate != null && !startDate.isEmpty()) {
-            LocalDate sDate = LocalDate.parse(startDate, FMT);
+
+            LocalDate sDate = LocalDate.parse(startDate, FRONT_FMT);
             predicates.add(cb.greaterThanOrEqualTo(root.get("eventStartDate"), sDate));
         }
         if (endDate != null && !endDate.isEmpty()) {
-            LocalDate eDate = LocalDate.parse(endDate, FMT);
+            LocalDate eDate = LocalDate.parse(endDate, FRONT_FMT);
+
             predicates.add(cb.lessThanOrEqualTo(root.get("eventEndDate"), eDate));
         }
         if (location != null && !location.isEmpty()) {
@@ -56,17 +61,19 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-        // ✅ count 쿼리에서는 별도의 Root와 Predicate 재작성
+
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Festival> countRoot = countQuery.from(Festival.class);
         List<Predicate> countPredicates = new ArrayList<>();
 
         if (startDate != null && !startDate.isEmpty()) {
-            LocalDate sDate = LocalDate.parse(startDate, FMT);
+
+            LocalDate sDate = LocalDate.parse(startDate, FRONT_FMT);
             countPredicates.add(cb.greaterThanOrEqualTo(countRoot.get("eventStartDate"), sDate));
         }
         if (endDate != null && !endDate.isEmpty()) {
-            LocalDate eDate = LocalDate.parse(endDate, FMT);
+            LocalDate eDate = LocalDate.parse(endDate, FRONT_FMT);
+
             countPredicates.add(cb.lessThanOrEqualTo(countRoot.get("eventEndDate"), eDate));
         }
         if (location != null && !location.isEmpty()) {
@@ -86,4 +93,7 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
 
         return new PageImpl<>(resultList, pageable, total);
     }
+
+
 }
+

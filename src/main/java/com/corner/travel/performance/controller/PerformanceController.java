@@ -56,11 +56,12 @@ public class PerformanceController {
             @RequestParam(required = false) String area,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        return performanceService.getPerformances(area, startDate, endDate, pageable);
+        Pageable pageable = PageRequest.of(page -1 , size);
+        return performanceService.getPerformances(area, startDate, endDate, keyword, pageable );
     }
 
     //상세조회

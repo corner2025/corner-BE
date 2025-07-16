@@ -78,9 +78,10 @@ public class PerformanceService {
 
 
     //DB 기반 정보조회 , 페이징
-    public Page<Performance> getPerformances(String area, String startDate, String endDate, Pageable pageable) {
-        return performanceRepository.searchPerformances(area, startDate, endDate, pageable);
+    public Page<Performance> getPerformances(String area, String startDate, String endDate, String keyword, Pageable pageable) {
+        return performanceRepository.searchPerformances(area, startDate, endDate, keyword, pageable);
     }
+
     //상세조회
     public Performance getPerformanceById(String id) {
         return performanceRepository.findById(id)

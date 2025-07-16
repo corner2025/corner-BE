@@ -41,7 +41,9 @@ public class FestivalServiceImpl implements FestivalService {
     @Value("${data.festival.api.key}")
     private String serviceKey;
 
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     @Override
     public List<FestivalDto> getFestivalList(int pageNo, int numOfRows) {
