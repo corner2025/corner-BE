@@ -2,7 +2,7 @@
 package com.corner.travel.dutyfree.repository;
 
 import com.corner.travel.dutyfree.domain.DutyFreeProduct;
-import com.corner.travel.dutyfree.dto.RankingDto;              // ★ 추가
+import com.corner.travel.dutyfree.dto.RankingDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
