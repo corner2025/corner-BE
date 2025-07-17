@@ -8,6 +8,7 @@ import com.corner.travel.touristSpot.dto.TouristSpotListResponse;
 import com.corner.travel.touristSpot.dto.TouristSpotSearchRequest;
 import com.corner.travel.touristSpot.service.TouristSpotService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/tourist-spot")
@@ -41,11 +43,21 @@ public class TouristSpotController {
     //관광지 LIST UP , REQ(시군구, 지역 , 키워드)로 LIST UP
     @GetMapping
     public Page<TouristSpotListResponse> getTouristSpots(
-            @ModelAttribute TouristSpotSearchRequest request,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String areaName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        log.info("[관광지 조회 요청] keyword={}, areaName={}, page={}, size={}",
+                keyword, areaName, page, size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        // TouristSpotSearchRequest 객체 직접 생성
+        TouristSpotSearchRequest request = new TouristSpotSearchRequest();
+        request.setKeyword(keyword);
+        request.setAreaName(areaName);
+
         return touristSpotService.getTouristSpots(request, pageable);
     }
 
