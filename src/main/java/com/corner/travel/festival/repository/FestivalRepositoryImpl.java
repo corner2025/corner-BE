@@ -18,37 +18,39 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     @PersistenceContext
     private EntityManager em;
 
-
     private static final DateTimeFormatter FRONT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
 
     @Override
     public Page<Festival> findByFilters(String startDate, String endDate, String location, String title, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-
-
+        // 메인 쿼리
         CriteriaQuery<Festival> cq = cb.createQuery(Festival.class);
         Root<Festival> root = cq.from(Festival.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if (startDate != null && !startDate.isEmpty()) {
-
+        if (startDate != null && endDate != null && !startDate.isEmpty() && !endDate.isEmpty()) {
             LocalDate sDate = LocalDate.parse(startDate, FRONT_FMT);
-            predicates.add(cb.greaterThanOrEqualTo(root.get("eventStartDate"), sDate));
-        }
-        if (endDate != null && !endDate.isEmpty()) {
             LocalDate eDate = LocalDate.parse(endDate, FRONT_FMT);
 
-            predicates.add(cb.lessThanOrEqualTo(root.get("eventEndDate"), eDate));
+            predicates.add(cb.or(
+                    cb.between(root.get("eventStartDate"), sDate, eDate),
+                    cb.between(root.get("eventEndDate"), sDate, eDate),
+                    cb.and(
+                            cb.lessThanOrEqualTo(root.get("eventStartDate"), sDate),
+                            cb.greaterThanOrEqualTo(root.get("eventEndDate"), eDate)
+                    )
+            ));
         }
+
         if (location != null && !location.isEmpty()) {
             predicates.add(cb.or(
                     cb.like(root.get("addr1"), "%" + location + "%"),
                     cb.like(root.get("addr2"), "%" + location + "%")
             ));
         }
+
         if (title != null && !title.isEmpty()) {
             predicates.add(cb.like(root.get("title"), "%" + title + "%"));
         }
@@ -61,27 +63,32 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-
+        // 카운트 쿼리
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Festival> countRoot = countQuery.from(Festival.class);
         List<Predicate> countPredicates = new ArrayList<>();
 
-        if (startDate != null && !startDate.isEmpty()) {
-
+        if (startDate != null && endDate != null && !startDate.isEmpty() && !endDate.isEmpty()) {
             LocalDate sDate = LocalDate.parse(startDate, FRONT_FMT);
-            countPredicates.add(cb.greaterThanOrEqualTo(countRoot.get("eventStartDate"), sDate));
-        }
-        if (endDate != null && !endDate.isEmpty()) {
             LocalDate eDate = LocalDate.parse(endDate, FRONT_FMT);
 
-            countPredicates.add(cb.lessThanOrEqualTo(countRoot.get("eventEndDate"), eDate));
+            countPredicates.add(cb.or(
+                    cb.between(countRoot.get("eventStartDate"), sDate, eDate),
+                    cb.between(countRoot.get("eventEndDate"), sDate, eDate),
+                    cb.and(
+                            cb.lessThanOrEqualTo(countRoot.get("eventStartDate"), sDate),
+                            cb.greaterThanOrEqualTo(countRoot.get("eventEndDate"), eDate)
+                    )
+            ));
         }
+
         if (location != null && !location.isEmpty()) {
             countPredicates.add(cb.or(
                     cb.like(countRoot.get("addr1"), "%" + location + "%"),
                     cb.like(countRoot.get("addr2"), "%" + location + "%")
             ));
         }
+
         if (title != null && !title.isEmpty()) {
             countPredicates.add(cb.like(countRoot.get("title"), "%" + title + "%"));
         }
@@ -93,7 +100,4 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
 
         return new PageImpl<>(resultList, pageable, total);
     }
-
-
 }
-
