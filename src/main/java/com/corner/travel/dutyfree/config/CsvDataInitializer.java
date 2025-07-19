@@ -1,4 +1,4 @@
-//package com.corner.travel.dutyfree.config;
+package com.corner.travel.dutyfree.config;//package com.corner.travel.dutyfree.config;
 //
 //import com.corner.travel.dutyfree.domain.DutyFreeProduct;
 //import com.corner.travel.dutyfree.repository.DutyFreeProductRepository;

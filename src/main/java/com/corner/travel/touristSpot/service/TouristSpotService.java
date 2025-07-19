@@ -113,34 +113,30 @@ public class TouristSpotService {
     public Page<TouristSpotListResponse> getTouristSpots(TouristSpotSearchRequest request, Pageable pageable) {
         Page<TouristSpot> result;
 
-        if (request.getAreaCode() != null && request.getSigunguCode() != null) {
-            result = touristSpotRepository.findByTitleContainingAndAreacodeAndSigungucode(
-                    request.getKeyword() != null ? request.getKeyword() : "",
-                    request.getAreaCode(),
-                    request.getSigunguCode(),
-                    pageable
-            );
-        } else if (request.getKeyword() != null) {
+        // ✅ areaName 기반 areaCode 변환
+        String areaCode = null;
+        if (request.getAreaName() != null && !request.getAreaName().isBlank()) {
+            areaCode = getAreaCodeFromName(request.getAreaName().trim());
+        }
+
+        // ✅ 조건 조합 처리
+        if (areaCode != null && request.getKeyword() != null && !request.getKeyword().isBlank()) {
+            result = touristSpotRepository.findByTitleContainingAndAreacode(
+                    request.getKeyword(), areaCode, pageable);
+        } else if (areaCode != null) {
+            result = touristSpotRepository.findByAreacode(areaCode, pageable);
+        } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
             result = touristSpotRepository.findByTitleContaining(request.getKeyword(), pageable);
         } else {
             result = touristSpotRepository.findAll(pageable);
         }
 
+        // ✅ 응답 가공 (areaCode → areaName 등)
         Map<String, String> areaNameMap = getAreaCodeNameMap();
 
         return result.map(touristSpot -> {
             String areaName = areaNameMap.getOrDefault(
                     String.valueOf(touristSpot.getAreacode()), "알 수 없음");
-
-            String cat2Name = getCat2Name(
-                    touristSpot.getCat1(),
-                    touristSpot.getCat2()
-            );
-            String cat3Name = getCat3Name(
-                    touristSpot.getCat1(),
-                    touristSpot.getCat2(),
-                    touristSpot.getCat3()
-            );
 
             return TouristSpotListResponse.builder()
                     .id(touristSpot.getId())
@@ -150,8 +146,8 @@ public class TouristSpotService {
                     .mapx(touristSpot.getMapx())
                     .mapy(touristSpot.getMapy())
                     .areaName(areaName)
-                    .cat2Name(cat2Name)
-                    .cat3Name(cat3Name)
+                    .cat2Name(getCat2Name(touristSpot.getCat1(), touristSpot.getCat2()))
+                    .cat3Name(getCat3Name(touristSpot.getCat1(), touristSpot.getCat2(), touristSpot.getCat3()))
                     .build();
         });
     }
@@ -196,6 +192,46 @@ public class TouristSpotService {
         }
 
         return map.getOrDefault(cat2, "알 수 없음");
+    }
+
+    //areaCode -> areaName으로 매핑
+    private static final Map<String, String> areaNameToCodeMap = Map.ofEntries(
+            Map.entry("서울", "1"),
+            Map.entry("인천", "2"),
+            Map.entry("대전", "3"),
+            Map.entry("대구", "4"),
+            Map.entry("광주", "5"),
+            Map.entry("부산", "6"),
+            Map.entry("울산", "7"),
+            Map.entry("세종", "8"),
+            Map.entry("경기", "31"),
+            Map.entry("강원", "32"),
+            Map.entry("충청북도", "33"),
+            Map.entry("충청남도", "34"),
+            Map.entry("경상북도", "35"),
+            Map.entry("경상남도", "36"),
+            Map.entry("전라북도", "37"),
+            Map.entry("전라남도", "38"),
+            Map.entry("제주", "39")
+    );
+
+    private String getAreaCodeFromName(String areaName) {
+        if (areaName == null) return null;
+        areaName = areaName.trim();
+
+        // 1) 정확히 매칭되는 경우 우선 리턴
+        if (areaNameToCodeMap.containsKey(areaName)) {
+            return areaNameToCodeMap.get(areaName);
+        }
+
+        // 2) 부분 매칭 - key가 areaName을 포함하거나 areaName이 key를 포함하는 경우
+        for (String key : areaNameToCodeMap.keySet()) {
+            if (key.contains(areaName) || areaName.contains(key)) {
+                return areaNameToCodeMap.get(key);
+            }
+        }
+
+        return null;
     }
 
 

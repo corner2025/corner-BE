@@ -18,11 +18,15 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
     @PersistenceContext
     private EntityManager em;
 
+
     private static final DateTimeFormatter FRONT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     @Override
     public Page<Festival> findByFilters(String startDate, String endDate, String location, String title, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
+
+
 
         CriteriaQuery<Festival> cq = cb.createQuery(Festival.class);
         Root<Festival> root = cq.from(Festival.class);
@@ -30,11 +34,13 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         List<Predicate> predicates = new ArrayList<>();
 
         if (startDate != null && !startDate.isEmpty()) {
+
             LocalDate sDate = LocalDate.parse(startDate, FRONT_FMT);
             predicates.add(cb.greaterThanOrEqualTo(root.get("eventStartDate"), sDate));
         }
         if (endDate != null && !endDate.isEmpty()) {
             LocalDate eDate = LocalDate.parse(endDate, FRONT_FMT);
+
             predicates.add(cb.lessThanOrEqualTo(root.get("eventEndDate"), eDate));
         }
         if (location != null && !location.isEmpty()) {
@@ -55,17 +61,19 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-        // count query
+
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Festival> countRoot = countQuery.from(Festival.class);
         List<Predicate> countPredicates = new ArrayList<>();
 
         if (startDate != null && !startDate.isEmpty()) {
+
             LocalDate sDate = LocalDate.parse(startDate, FRONT_FMT);
             countPredicates.add(cb.greaterThanOrEqualTo(countRoot.get("eventStartDate"), sDate));
         }
         if (endDate != null && !endDate.isEmpty()) {
             LocalDate eDate = LocalDate.parse(endDate, FRONT_FMT);
+
             countPredicates.add(cb.lessThanOrEqualTo(countRoot.get("eventEndDate"), eDate));
         }
         if (location != null && !location.isEmpty()) {
@@ -86,4 +94,6 @@ public class FestivalRepositoryImpl implements FestivalRepositoryCustom {
         return new PageImpl<>(resultList, pageable, total);
     }
 
+
 }
+
