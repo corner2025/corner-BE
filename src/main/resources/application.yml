@@ -1,9 +1,9 @@
 spring:
   datasource:
     #로컬 작업용
-    # url: jdbc:mysql://117.16.152.191:3307/travel?useSSL=false&serverTimezone=Asia/Seoul
+    url: jdbc:mysql://117.16.152.191:3307/travel?useSSL=false&serverTimezone=Asia/Seoul
     #SCP 배포용
-    url: jdbc:mysql://mysql:3307/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    # url: jdbc:mysql://mysql:3307/travel?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
     username: cornerbe
     password: cornerbe0720
     driver-class-name: com.mysql.cj.jdbc.Driver
